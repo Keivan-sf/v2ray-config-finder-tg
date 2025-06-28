@@ -4,6 +4,11 @@ import {
   Context,
   StorageLocalStorage,
   MessageText,
+  ChatGroup,
+  ChatChannel,
+  ChatPSupergroup,
+  ChatPChannel,
+  ChatPGroup,
 } from "@mtkruto/node";
 import axios from "axios";
 const config_tester_url = "http://127.0.0.1:5574/add-config";
@@ -57,24 +62,14 @@ async function getLastMessages(client: Client<Context>) {
   await sleep(1000);
   for (const chat of chats) {
     console.log("getting chat history:");
-    const messages = await keepTryingAsync(() =>
-      client.getHistory(chat.chat.id, { limit: 100 }),
-    );
-    console.log("got chat history");
-    const text_messages: MessageText[] = messages.filter(
-      (m: any) => !!m.text,
-    ) as MessageText[];
-    const vless_uris: string[] = [];
-    text_messages.forEach((tm) =>
-      vless_uris.push(...extractVlessUris(tm.text)),
-    );
-    console.log(
-      "got text messages:",
-      text_messages.length,
-      "vless_uris:",
-      vless_uris.length,
-    );
-    vless_uris.forEach((uri) => send_config(uri));
+    if (
+      chat.chat.type !== "channel" &&
+      chat.chat.type !== "supergroup" &&
+      chat.chat.type !== "group"
+    ) {
+      continue;
+    }
+    sendChatHistoryConfigs(client, chat.chat);
     await sleep(1000);
   }
 }
@@ -93,6 +88,40 @@ async function handleUpdates(client: Client<Context>) {
       vless_uris.forEach((uri) => send_config(uri));
     }
   });
+  client.on("newChat", async (ctx) => {
+    if (
+      ctx.newChat.chat.type !== "channel" &&
+      ctx.newChat.chat.type !== "supergroup" &&
+      ctx.newChat.chat.type !== "group"
+    ) {
+      return;
+    }
+
+    const chat = ctx.newChat.chat;
+    sendChatHistoryConfigs(client, chat);
+  });
+}
+
+async function sendChatHistoryConfigs(
+  client: Client<Context>,
+  chat: ChatPGroup | ChatPChannel | ChatPSupergroup,
+) {
+  const messages = await keepTryingAsync(() =>
+    client.getHistory(chat.id, { limit: 50 }),
+  );
+  console.log("got chat history");
+  const text_messages: MessageText[] = messages.filter(
+    (m: any) => !!m.text,
+  ) as MessageText[];
+  const vless_uris: string[] = [];
+  text_messages.forEach((tm) => vless_uris.push(...extractVlessUris(tm.text)));
+  console.log(
+    "got text messages:",
+    text_messages.length,
+    "vless_uris:",
+    vless_uris.length,
+  );
+  vless_uris.forEach((uri) => send_config(uri));
 }
 
 const extractVlessUris = (text: string): string[] => {
