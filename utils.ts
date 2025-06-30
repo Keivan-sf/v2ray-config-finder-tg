@@ -8,7 +8,6 @@ export async function keepTryingAsync<T>(
     try {
       return await job();
     } catch (err) {
-      console.log("function failed, retrying...");
       await sleep(delay);
     }
   }

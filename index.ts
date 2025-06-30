@@ -61,7 +61,6 @@ async function getLastMessages(client: Client<Context>) {
   );
   await sleep(1000);
   for (const chat of chats) {
-    console.log("getting chat history:");
     if (
       chat.chat.type !== "channel" &&
       chat.chat.type !== "supergroup" &&
@@ -75,7 +74,7 @@ async function getLastMessages(client: Client<Context>) {
 }
 
 function send_config(config_uri: string) {
-  console.log("sending config", config_uri);
+  // console.log("sending config", config_uri);
   axios.post(config_tester_url, { config: config_uri }).catch((err) => {
     console.log("[warning] failed to send config to config tester", err);
   });
@@ -109,7 +108,6 @@ async function sendChatHistoryConfigs(
   const messages = await keepTryingAsync(() =>
     client.getHistory(chat.id, { limit: 50 }),
   );
-  console.log("got chat history");
   const text_messages: MessageText[] = messages.filter(
     (m: any) => !!m.text,
   ) as MessageText[];
