@@ -85,6 +85,7 @@ async function handleUpdates(client: Client<Context>) {
     if (!ctx.message.out) {
       const vless_uris = extractVlessUris(ctx.message.text);
       vless_uris.forEach((uri) => send_config(uri));
+      console.log("new message vless_uris:", vless_uris.length);
     }
   });
   client.on("newChat", async (ctx) => {
