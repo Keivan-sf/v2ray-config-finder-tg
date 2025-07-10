@@ -30,6 +30,7 @@ const APP_API_HASH = process.env.APP_API_HASH;
 const CHAT_HISTORY_LIMIT = process.env.CHAT_HISTORY_LIMIT
   ? +process.env.CHAT_HISTORY_LIMIT
   : 50;
+const ONLY_AUTH = process.env.ONLY_AUTH && process.env.ONLY_AUTH == "true";
 
 async function main() {
   const client = new Client({
@@ -37,15 +38,15 @@ async function main() {
     apiId: APP_API_ID,
     apiHash: APP_API_HASH,
   });
-  console.log("client constructed");
 
-  console.log("going for auth");
   await client.start({
-    phone: () => prompt("Enter your phone number:"),
+    phone: () => prompt("Enter your telegram phone number:"),
     code: () => prompt("Enter the code you received:"),
     password: () => prompt("Enter your account's password:"),
   });
   console.log("finished authentication");
+
+  if (ONLY_AUTH) process.exit(0);
 
   console.log("handling updates");
   handleUpdates(client);
