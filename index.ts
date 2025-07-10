@@ -11,7 +11,8 @@ import {
   ChatPGroup,
 } from "@mtkruto/node";
 import axios from "axios";
-const config_tester_url = "http://127.0.0.1:5574/add-config";
+const config_tester_url =
+  process.env.CONFIG_TESTER_URL ?? "http://127.0.0.1:5574/add-config";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -26,7 +27,9 @@ if (!process.env.APP_API_ID) throw new Error("APP_API_ID not specified");
 if (!process.env.APP_API_HASH) throw new Error("APP_API_HASH not specified");
 const APP_API_ID = +process.env.APP_API_ID;
 const APP_API_HASH = process.env.APP_API_HASH;
-const CHAT_HISTORY_LIMIT = process.env.CHAT_HISTORY_LIMIT ? +process.env.CHAT_HISTORY_LIMIT : 50;
+const CHAT_HISTORY_LIMIT = process.env.CHAT_HISTORY_LIMIT
+  ? +process.env.CHAT_HISTORY_LIMIT
+  : 50;
 
 async function main() {
   const client = new Client({
