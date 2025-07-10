@@ -26,6 +26,7 @@ if (!process.env.APP_API_ID) throw new Error("APP_API_ID not specified");
 if (!process.env.APP_API_HASH) throw new Error("APP_API_HASH not specified");
 const APP_API_ID = +process.env.APP_API_ID;
 const APP_API_HASH = process.env.APP_API_HASH;
+const CHAT_HISTORY_LIMIT = process.env.CHAT_HISTORY_LIMIT ? +process.env.CHAT_HISTORY_LIMIT : 50;
 
 async function main() {
   const client = new Client({
@@ -107,7 +108,7 @@ async function sendChatHistoryConfigs(
   chat: ChatPGroup | ChatPChannel | ChatPSupergroup,
 ) {
   const messages = await keepTryingAsync(() =>
-    client.getHistory(chat.id, { limit: 50 }),
+    client.getHistory(chat.id, { limit: CHAT_HISTORY_LIMIT }),
   );
   const text_messages: MessageText[] = messages.filter(
     (m: any) => !!m.text,
