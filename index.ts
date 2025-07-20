@@ -115,7 +115,7 @@ async function sendChatHistoryConfigs(
     client.getHistory(chat.id, { limit: CHAT_HISTORY_LIMIT }),
   );
   const text_messages: MessageText[] = messages.filter(
-    (m: any) => !!m.text,
+    (m) => !!(m as any).text && !m.out,
   ) as MessageText[];
   const vless_uris: string[] = [];
   text_messages.forEach((tm) => vless_uris.push(...extractVlessUris(tm.text)));
