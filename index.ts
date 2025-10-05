@@ -5,7 +5,7 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 import { createInterface } from "node:readline";
 import { stdin as input, stdout as output } from "node:process";
-import { extractVlessUris, keepTryingAsync } from "./utils/utils";
+import { extractV2raysUris, keepTryingAsync } from "./utils/utils";
 import { send_config, sendChatHistoryConfigs } from "./lib/sendConfigs";
 const readline = createInterface({ input, output });
 const prompt = (q): Promise<string> =>
@@ -66,9 +66,9 @@ async function getLastMessages(client: Client<Context>) {
 async function handleUpdates(client: Client<Context>) {
   client.on("message:text", (ctx) => {
     if (!ctx.message.out) {
-      const vless_uris = extractVlessUris(ctx.message.text);
-      vless_uris.forEach((uri) => send_config(uri));
-      console.log("new message vless_uris:", vless_uris.length);
+      const uris = extractV2raysUris(ctx.message.text);
+      uris.forEach((uri) => send_config(uri));
+      console.log("new message uris:", uris.length);
     }
   });
   client.on("newChat", async (ctx) => {

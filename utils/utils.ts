@@ -13,8 +13,8 @@ export async function keepTryingAsync<T>(
   }
 }
 
-export const extractVlessUris = (text: string): string[] => {
-  const regex = /vless:\/\/[^\s"'<>]+/g;
+export const extractV2raysUris = (text: string): string[] => {
+  const regex = /(?:vless|vmess|trojan|ss):\/\/[^\s"'<>]+/g;
   const matches = text.match(regex);
   return matches ?? [];
 };
