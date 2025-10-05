@@ -1,24 +1,12 @@
 import "dotenv/config";
-import {
-  Client,
-  Context,
-  StorageLocalStorage,
-  MessageText,
-  ChatGroup,
-  ChatChannel,
-  ChatPSupergroup,
-  ChatPChannel,
-  ChatPGroup,
-} from "@mtkruto/node";
-import axios from "axios";
-const config_tester_url =
-  process.env.CONFIG_TESTER_URL ?? "http://127.0.0.1:5574/add-config";
+import { Client, Context, StorageLocalStorage } from "@mtkruto/node";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 import { createInterface } from "node:readline";
 import { stdin as input, stdout as output } from "node:process";
-import { keepTryingAsync } from "./utils";
+import { extractVlessUris, keepTryingAsync } from "./utils/utils";
+import { send_config, sendChatHistoryConfigs } from "./lib/sendConfigs";
 const readline = createInterface({ input, output });
 const prompt = (q): Promise<string> =>
   new Promise((r) => readline.question(q + " ", r));
@@ -27,9 +15,6 @@ if (!process.env.APP_API_ID) throw new Error("APP_API_ID not specified");
 if (!process.env.APP_API_HASH) throw new Error("APP_API_HASH not specified");
 const APP_API_ID = +process.env.APP_API_ID;
 const APP_API_HASH = process.env.APP_API_HASH;
-const CHAT_HISTORY_LIMIT = process.env.CHAT_HISTORY_LIMIT
-  ? +process.env.CHAT_HISTORY_LIMIT
-  : 50;
 const ONLY_AUTH = process.env.ONLY_AUTH && process.env.ONLY_AUTH == "true";
 
 async function main() {
@@ -78,13 +63,6 @@ async function getLastMessages(client: Client<Context>) {
   }
 }
 
-function send_config(config_uri: string) {
-  // console.log("sending config", config_uri);
-  axios.post(config_tester_url, { config: config_uri }).catch((err) => {
-    console.log("[warning] failed to send config to config tester", err);
-  });
-}
-
 async function handleUpdates(client: Client<Context>) {
   client.on("message:text", (ctx) => {
     if (!ctx.message.out) {
@@ -106,32 +84,5 @@ async function handleUpdates(client: Client<Context>) {
     sendChatHistoryConfigs(client, chat);
   });
 }
-
-async function sendChatHistoryConfigs(
-  client: Client<Context>,
-  chat: ChatPGroup | ChatPChannel | ChatPSupergroup,
-) {
-  const messages = await keepTryingAsync(() =>
-    client.getHistory(chat.id, { limit: CHAT_HISTORY_LIMIT }),
-  );
-  const text_messages: MessageText[] = messages.filter(
-    (m) => !!(m as any).text && !m.out,
-  ) as MessageText[];
-  const vless_uris: string[] = [];
-  text_messages.forEach((tm) => vless_uris.push(...extractVlessUris(tm.text)));
-  console.log(
-    "got text messages:",
-    text_messages.length,
-    "vless_uris:",
-    vless_uris.length,
-  );
-  vless_uris.forEach((uri) => send_config(uri));
-}
-
-const extractVlessUris = (text: string): string[] => {
-  const regex = /vless:\/\/[^\s"'<>]+/g;
-  const matches = text.match(regex);
-  return matches ?? [];
-};
 
 main();

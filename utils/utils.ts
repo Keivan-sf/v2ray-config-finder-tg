@@ -12,3 +12,9 @@ export async function keepTryingAsync<T>(
     }
   }
 }
+
+export const extractVlessUris = (text: string): string[] => {
+  const regex = /vless:\/\/[^\s"'<>]+/g;
+  const matches = text.match(regex);
+  return matches ?? [];
+};
